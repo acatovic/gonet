@@ -81,7 +81,7 @@ func (net *Network) backprop(y *gomat.Matrix, as, zs []*gomat.Matrix) (
 	[]*gomat.Matrix, []*gomat.Matrix) {
 	dbiases := make([]*gomat.Matrix, net.num_layers - 1)
 	dweights := make([]*gomat.Matrix, net.num_layers - 1)
-	delta := gomat.Mul(net.cost_derivative(as[len(as) - 1], y),
+	delta := gomat.Hadamard(net.cost_derivative(as[len(as) - 1], y),
 		gomat.Sigmoidpr(zs[len(zs) - 1]))
 
 	// output layer partial derivatives
@@ -94,7 +94,7 @@ func (net *Network) backprop(y *gomat.Matrix, as, zs []*gomat.Matrix) (
 		z := zs[len(zs) - i]
 		sp := gomat.Sigmoidpr(z)
 		wi := len(net.weights) - i + 1
-		delta = gomat.Mul(gomat.Dot(
+		delta = gomat.Hadamard(gomat.Dot(
 			gomat.Transpose(net.weights[wi]), delta), sp)
 		dbiases[len(dbiases) - i] = delta
 		ai := len(as) - i - 1
@@ -134,8 +134,8 @@ func (net *Network) feedforward(x *gomat.Matrix) (
 func (net *Network) update(eta float64, dbiases, dweights []*gomat.Matrix) {
 	for i := 0; i < len(net.weights); i++ {
 		net.biases[i] = gomat.Sub(net.biases[i],
-			gomat.Scale(eta, dbiases[i]))
+			gomat.Mul(eta, dbiases[i]))
 		net.weights[i] = gomat.Sub(net.weights[i],
-			gomat.Scale(eta, dweights[i]))
+			gomat.Mul(eta, dweights[i]))
 	}
 }
